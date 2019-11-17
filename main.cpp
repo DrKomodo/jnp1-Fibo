@@ -9,9 +9,10 @@ using Digits = std::vector<Digit>;
 // Pytania:
 //czy argument do konstruktora ma byc przez referencje?
 //co ma byc w .cpp a co w .h?
-//jak inicjowac member objects kiedy argumenty ich oknstruktorow trzeba najpierw obliczyć?
+//jak inicjowac member objects kiedy argumenty ich oknstruktorow trzeba najpierw obliczyć tzn czy da sie uzyc
+//initializer list?
+// czy mamy uzywac unsigned? problem taki, ze wtedy warunki w petlach typu >= 0 nie ddzialaja
 
-//zmienic na naturalne indeksowanie cyfr od najmniej znaczacych
 
 unsigned long fib(unsigned const int n) {
     static std::vector<unsigned long> fib_numbers(2);
@@ -34,11 +35,12 @@ unsigned long fib(unsigned const int n) {
 }
 
 class Fibo {
+    // cyfry sa w kolejnosci od najmniej znaczacych
     Digits digits;
 
     void normalize();
 
-    void set_digit(const unsigned fib_index, int value) {
+    void set_digit(const int fib_index, short value) {
         digits[fib_index - 2] = value == 1;
     }
 
@@ -56,6 +58,10 @@ public:
         std::cout << std::endl;
     }
 
+    Fibo() {
+        digits.push_back(0);
+    }
+
     explicit Fibo(const std::string &s) { //co zrobic gdy s nie jest ciagiem zer i jedynek? (na razie zakladam ze jest)
         for (auto it = s.rbegin(); it != s.rend(); it++) {
             digits.push_back(*it == '1');
@@ -63,13 +69,13 @@ public:
         normalize();
     }
 
-    explicit Fibo(unsigned int n);
+    explicit Fibo(unsigned long n);
 
     Fibo &operator+=(const Fibo &other);
 };
 
 namespace {
-    bool iterate_until_repetition(Digits &d, unsigned long &current_index) {
+    bool iterate_until_repetition(const Digits &d, unsigned long &current_index) {
         Digit current_value = d[current_index];
         while (current_index > 0) {
             if (d[current_index - 1] == current_value) {
@@ -85,7 +91,7 @@ namespace {
 
     void handle_doubled_ones(Digits &d, unsigned long &current_index, unsigned long &free_slot) {
         d[free_slot] = 1;
-        for (unsigned long i = free_slot - 1; i >= current_index; i--) {
+        for (unsigned long i = free_slot; i-- > current_index;) {
             d[i] = 0;
         }
         free_slot = current_index;
@@ -104,17 +110,28 @@ void Fibo::normalize() {
         }
     }
 
-    while (digits.back() == 0) {
+    while (digits.back() == 0 && digits.size() > 1) {
         digits.pop_back();
     }
 }
 
-Fibo::Fibo(unsigned int n) {
-    unsigned int i = 0;
-    while (fib(i + 1) <= n) {
-        i++;
+namespace {
+    unsigned greatest_fitting_fib(unsigned long n) {
+        unsigned i = 0;
+        while (fib(i + 1) <= n) {
+            i++;
+        }
+        return i;
+    }
+}
+
+Fibo::Fibo(unsigned long n) {
+    if (n == 0) {
+        digits.push_back(0);
+        return;
     }
 
+    unsigned i = greatest_fitting_fib(n);
     digits.resize(i - 1);
     for (; i >= 2; i--) {
         if (fib(i) <= n) {
@@ -125,17 +142,10 @@ Fibo::Fibo(unsigned int n) {
 }
 
 
-
-
-void Fibo::add_one_at_position(const unsigned i) {
-    if (digits[i] == 0) {
-        digits[i] = 1;
-        normalize();
-        return;
-    }
-
+void Fibo::add_one_at_position(unsigned int i) {
     digits.push_back(0);
-    unsigned add_at = i;
+
+    int add_at = i;
     while (add_at >= 0) {
         if (digits[add_at] == 1) {
             digits[add_at + 1] = 1;
@@ -168,16 +178,16 @@ Fibo &Fibo::operator+=(const Fibo &other) {
 }
 
 int main() {
-    Fibo f2(50);
-    Fibo f3(20);
 
-    f2.print();
-    f3.print();
-
-    f2 += f3;
-
-    f2.print();
-
+    Fibo f("0010101011");
+    Fibo f0(0);
+    Fibo f1(1);
+    Fibo f2(100);
+    f0 += f1;
+    f0.print();
+    f.print();
+    Fibo asd;
+    asd.print();
 
     return 0;
 }
