@@ -5,7 +5,7 @@ using Digit = bool;
 using Digits = std::vector<Digit>;
 
 
-
+//czy mi dziala
 // Pytania:
 //czy argument do konstruktora ma byc przez referencje?
 //co ma byc w .cpp a co w .h?
