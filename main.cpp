@@ -5,14 +5,23 @@ using Digit = bool;
 using Digits = std::vector<Digit>;
 
 
-//czy mi dziala
 // Pytania:
 //czy argument do konstruktora ma byc przez referencje?
 //co ma byc w .cpp a co w .h?
 //jak inicjowac member objects kiedy argumenty ich oknstruktorow trzeba najpierw obliczyć tzn czy da sie uzyc
 //initializer list?
 // czy mamy uzywac unsigned? problem taki, ze wtedy warunki w petlach typu >= 0 nie ddzialaja
+//zmienic na size_t
 
+
+// Do zrobienia:
+//
+// short int long zeby dizlalo - Piotrus :((((
+// niezmieniajace sie obiekty One itp.
+// rvalues???????
+// operacje porownywania przesuniecie bitowe reszta operatorow
+// wybadac teren - Piotrus
+// podzielic elegancko na moduly (latwe)
 
 unsigned long fib(unsigned const int n) {
     static std::vector<unsigned long> fib_numbers(2);
@@ -179,10 +188,13 @@ Fibo &Fibo::operator+=(const Fibo &other) {
 
 int main() {
 
-    Fibo f("0010101011");
+    Fibo f("00101010111111111010101010101100");
     Fibo f0(0);
+    Fibo f9(-1);
     Fibo f1(1);
     Fibo f2(100);
+    Fibo f(createFibo()); // constructor
+    f = createFibo(); // assignment operator
     f0 += f1;
     f0.print();
     f.print();
