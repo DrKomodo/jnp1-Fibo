@@ -242,6 +242,7 @@ Fibo& Fibo::operator&=(const Fibo &other) {
     for (size_t i = 0; i < length; i++) {
         digits[i] = digits[i] && other.digits[i];
     }
+    normalize();
     return *this;
 }
 
@@ -266,6 +267,7 @@ Fibo& Fibo::operator^=(const Fibo &other) {
     for (size_t i = 0; i < length; i++) {
         digits[i] = digits[i] ^ other.digits[i];
     }
+    normalize();
     return *this;
 }
 
@@ -278,11 +280,12 @@ bool Fibo::operator==(const Fibo &other) const {
         return false;
     }
 
-    bool result = true;
     for (size_t i = 0; i < length(); i++) {
-        result = digits[i] == other.digits[i];
+        if(digits[i] != other.digits[i]){
+			return false;
+        }
     }
-    return result;
+    return true;
 }
 
 bool Fibo::operator!=(const Fibo &other) const {
