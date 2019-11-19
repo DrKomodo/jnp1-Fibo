@@ -1,10 +1,16 @@
 #include <iostream>
 #include "fibo.h"
 #include <vector>
+#include <cassert>
 
 
 using Digit = bool;
 using Digits = std::vector<Digit>;
+
+const bool ZERO = false;
+const bool ONE = true;
+
+using namespace std;
 
 
 //czy mi dziala
@@ -16,8 +22,19 @@ using Digits = std::vector<Digit>;
 // czy mamy uzywac unsigned? problem taki, ze wtedy warunki w petlach typu >= 0 nie ddzialaja
 
 
-unsigned long fib(unsigned const int n) {
-	static std::vector<unsigned long> fib_numbers(2);
+// Do zrobienia:
+//
+// short int long zeby dizlalo - Piotrus :((((
+// niezmieniajace sie obiekty One itp.
+// rvalues???????
+// operacje porownywania przesuniecie bitowe reszta operatorow
+// wybadac teren - Piotrus
+// podzielic elegancko na moduly (latwe)
+
+
+//liczy n-tą liczbę fibo
+unsigned long long fib(unsigned long long int n) {
+	static std::vector<unsigned long long> fib_numbers(2);
 	fib_numbers[0] = 0;
 	fib_numbers[1] = 1;
 
@@ -36,12 +53,14 @@ unsigned long fib(unsigned const int n) {
 	return fib_numbers[n] = fib(n - 1) + fib(n - 2);
 }
 
-void Fibo :: set_digit(const int fib_index, short value) {
+//ustawia na indeksie
+//TODO czemu short nie bool?
+void Fibo::set_digit(size_t fib_index, short value) {
 	digits[fib_index - 2] = value == 1;
 }
 
 
-void Fibo ::  print(){ //funkcja robocza
+void Fibo:: print() const{ //funkcja robocza
 	for(auto it = digits.rbegin(); it != digits.rend(); it++){
 		if(*it){
 			std::cout << "1";
@@ -52,21 +71,28 @@ void Fibo ::  print(){ //funkcja robocza
 	std::cout << std::endl;
 }
 
-Fibo :: Fibo() {
-	digits.push_back(0);
-}
+//chyba lepiej, inicjalizuje digits z jednym elementem ZERO
+//konstruktor bezparametrowy
+Fibo::Fibo() : digits(1, ZERO){};
 
-Fibo ::  Fibo(const std::string &s) { //co zrobic gdy s nie jest ciagiem zer i jedynek? (na razie zakladam ze jest)
+//TODO Assertion dla nie zer, co gd
+//konstruktor ze Stringa
+Fibo:: Fibo(const std::string &s) { //co zrobic gdy s nie jest ciagiem zer i jedynek? (na razie zakladam ze jest)
 	for (auto it = s.rbegin(); it != s.rend(); it++) {
 		digits.push_back(*it == '1');
 	}
 	normalize();
 }
 
+//copy constructor
+Fibo::Fibo(const Fibo& other) = default;
+
+// move constructor
+Fibo::Fibo(Fibo&& other) noexcept : digits(move(other.digits)){}
 
 
 namespace {
-	bool iterate_until_repetition(const Digits &d, unsigned long &current_index) {
+	bool iterate_until_repetition(const Digits &d, size_t &current_index) {
 		Digit current_value = d[current_index];
 		while (current_index > 0) {
 			if (d[current_index - 1] == current_value) {
@@ -80,19 +106,19 @@ namespace {
 		return false;
 	}
 
-	void handle_doubled_ones(Digits &d, unsigned long &current_index, unsigned long &free_slot) {
-		d[free_slot] = 1;
-		for (unsigned long i = free_slot; i-- > current_index;) {
-			d[i] = 0;
+	void handle_doubled_ones(Digits &d, size_t &current_index, size_t &free_slot) {
+		d[free_slot] = ONE;
+		for (size_t i = free_slot; i-- > current_index;) {
+			d[i] = ZERO;
 		}
 		free_slot = current_index;
 	}
 }
 
 void Fibo::normalize() {
-	digits.push_back(0);
-	unsigned long free_slot = digits.size() - 1;
-	unsigned long current_index = digits.size() - 1;
+	digits.push_back(ZERO);
+	size_t free_slot = digits.size() - 1;
+	size_t current_index = digits.size() - 1;
 	while (iterate_until_repetition(digits, current_index)) {
 		if (digits[current_index] == 0) {
 			free_slot = current_index;
@@ -107,8 +133,8 @@ void Fibo::normalize() {
 }
 
 namespace {
-	unsigned greatest_fitting_fib(unsigned long n) {
-		unsigned i = 0;
+	size_t greatest_fitting_fib(unsigned long long n) {
+		size_t i = 0;
 		while (fib(i + 1) <= n) {
 			i++;
 		}
@@ -116,13 +142,15 @@ namespace {
 	}
 }
 
-Fibo::Fibo(unsigned long n) {
+Fibo::Fibo(long long int a) {
+	assert(a >= 0);
+	unsigned long long n = a; //konwersja
 	if (n == 0) {
-		digits.push_back(0);
+		digits.push_back(ZERO);
 		return;
 	}
 
-	unsigned i = greatest_fitting_fib(n);
+	size_t i = greatest_fitting_fib(n);
 	digits.resize(i - 1);
 	for (; i >= 2; i--) {
 		if (fib(i) <= n) {
@@ -133,24 +161,34 @@ Fibo::Fibo(unsigned long n) {
 }
 
 
-void Fibo::add_one_at_position(unsigned int i) {
-	digits.push_back(0);
+void Fibo::add_one_at_position(size_t i) {
+	digits.push_back(ZERO);
 
 	int add_at = i;
 	while (add_at >= 0) {
 		if (digits[add_at] == 1) {
-			digits[add_at + 1] = 1;
-			digits[add_at] = 0;
+			digits[add_at + 1] = ONE;
+			digits[add_at] = ZERO;
 			add_at -= 2;
 		} else {
-			digits[add_at] = 1;
+			digits[add_at] = ONE;
 			break;
 		}
 	}
 	normalize();
 }
 
-Fibo &Fibo::operator+=(const Fibo &other) {
+const Fibo& Zero() {
+	static const Fibo zero;
+	return zero;
+}
+
+const Fibo& One() {
+	static const Fibo one(1);
+	return one;
+}
+
+Fibo& Fibo::operator+=(const Fibo &other) {
 	if (this == &other) {
 		return *this;
 	}
@@ -159,7 +197,7 @@ Fibo &Fibo::operator+=(const Fibo &other) {
 		digits.resize(other.digits.size());
 	}
 
-	for (unsigned i = 0; i < other.digits.size(); i++) {
+	for (size_t i = 0; i < other.digits.size(); i++) {
 		if (other.digits[i] == 1) {
 			add_one_at_position(i);
 		}
@@ -167,4 +205,21 @@ Fibo &Fibo::operator+=(const Fibo &other) {
 
 	return *this;
 }
+
+Fibo& Fibo::operator=(Fibo&& other) noexcept {
+	digits = move(other.digits);
+	return *this;
+}
+
+Fibo& Fibo::operator=(const Fibo& that) = default;
+
+//TODO pokombinowc czy napewno w ten sposob moze jakies Rvalue
+Fibo Fibo::operator+(const Fibo &other) const {
+	return Fibo(*this) += other;
+}
+
+size_t Fibo::length(){
+	return digits.size();
+}
+
 

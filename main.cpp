@@ -1,17 +1,20 @@
 #include <iostream>
 #include "fibo.h"
 
+using namespace std;
+
 int main() {
 
-    Fibo f("0010101011");
-    Fibo f0(0);
-    Fibo f1(1);
-    Fibo f2(100);
-    f0 += f1;
-    f0.print();
-    f.print();
-    Fibo asd;
-    asd.print();
+   Fibo a("10101");
+   Fibo b(15);
+   Fibo f('a');
+
+   Fibo c;
+   a = c;
+
+   a.print();
+
+
 
     return 0;
 }
