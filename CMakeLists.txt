@@ -4,4 +4,3 @@ project(jnp1-Fibo)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(jnp1-Fibo main.cpp fibo.cc)
-

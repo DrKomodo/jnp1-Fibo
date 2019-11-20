@@ -58,13 +58,18 @@ void Fibo::set_digit(size_t fib_index, bool value) {
 //konstruktor bezparametrowy
 Fibo::Fibo() : digits(1, ZERO){};
 
-//TODO Assertion dla nie zer, wiodące zera tez złe
 //konstruktor ze Stringa
-Fibo:: Fibo(const std::string &s) { //co zrobic gdy s nie jest ciagiem zer i jedynek? (na razie zakladam ze jest)
+Fibo::Fibo(const std::string &s) {
+	assert(s[0] == '1');
     for (auto it = s.rbegin(); it != s.rend(); it++) {
+    	assert(*it == '0' || *it == '1');
         digits.push_back(*it == '1');
     }
     normalize();
+}
+
+Fibo::Fibo(const char* c) : Fibo(std::string(c)){
+	assert(c != nullptr);
 }
 
 //copy constructor
@@ -125,9 +130,10 @@ namespace {
     }
 }
 
-Fibo::Fibo(long long int a) {
-    assert(a >= 0);
-    unsigned long long n = a; //konwersja
+
+
+//główny konstructor
+Fibo::Fibo(unsigned long long n) {
     if (n == 0) {
         digits.push_back(ZERO);
         return;
@@ -143,6 +149,15 @@ Fibo::Fibo(long long int a) {
     }
 }
 
+Fibo::Fibo(int n) : Fibo((unsigned long long) n){
+	assert(n >= 0);
+}
+
+Fibo::Fibo(unsigned int n) : Fibo((unsigned long long) n){}
+
+Fibo::Fibo(long n) : Fibo((unsigned long long) n){
+	assert(n >= 0);
+}
 
 void Fibo::add_one_at_position(size_t i) {
     digits.push_back(ZERO);
@@ -171,7 +186,7 @@ const Fibo& Zero() {
 }
 
 const Fibo& One() {
-    static const Fibo one(1);
+    static const Fibo one("1");
     return one;
 }
 
@@ -195,17 +210,21 @@ Fibo& Fibo::operator+=(const Fibo &other) {
 
 
 
+//TODO pokombinowc czy napewno w ten sposob moze jakies Rvalue
+const Fibo operator+(Fibo a, const Fibo &b) {
+	return a += b;
+}
+
+const Fibo operator+(unsigned long long a , const Fibo &b) {
+	return Fibo(a) += b;
+}
+
 Fibo& Fibo::operator=(Fibo&& other) noexcept {
     digits = move(other.digits);
     return *this;
 }
 
 Fibo& Fibo::operator=(const Fibo& that) = default;
-
-//TODO pokombinowc czy napewno w ten sposob moze jakies Rvalue
-Fibo Fibo::operator+(const Fibo &other) const {
-    return Fibo(*this) += other;
-}
 
 
 
@@ -237,6 +256,7 @@ Fibo Fibo::operator&(const Fibo &other) const {
     return Fibo(*this) &= other;
 }
 
+//TODO NORMALIZUJ WSZEDZIE PRZ OPERATORACH
 Fibo& Fibo::operator|=(const Fibo &other) {
     size_t length = min(this->length(), other.length());
     for (size_t i = 0; i < length; i++) {
@@ -324,19 +344,6 @@ ostream& operator<<(ostream& os, const Fibo& fibo){
 	std::cout << std::endl;
 	return os;
 }
-/*
-Fibo::operator long long int() const{
-
-	if(*this >= Fibo(INT64_MAX)){
-		return INT64_MAX;
-	}
-
-	long long int stary = 1;
-	long long int nowy = 1;
-
-	return 0;
-}*/
-
 
 
 
