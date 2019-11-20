@@ -11,10 +11,8 @@ using Digits = std::vector<Digit>;
 class Fibo {
 
 public:
-    void print() const;
     Fibo();
     Fibo(const Fibo& other);
-   // explicit Fibo(char) = delete;
     Fibo(Fibo&& other) noexcept; //tak podpowiada z tym no except
     explicit Fibo(const std::string &s);
     Fibo(long long int n);
@@ -39,12 +37,15 @@ public:
     bool operator>(const Fibo &other) const;
     bool operator<=(const Fibo &other) const;
     bool operator>=(const Fibo &other) const;
+    //TODO zeby działo 2 + fibo
+	//operator long long int() const;
+	friend std::ostream& operator<<(std::ostream& os, const Fibo& fibo);
     size_t length() const;
 
 private:
     Digits digits;
     void normalize();
-    void set_digit(size_t fib_index, short value);
+    void set_digit(size_t fib_index, bool value);
     void add_one_at_position(size_t i);
 };
 const Fibo& Zero();

@@ -25,11 +25,8 @@ using namespace std;
 // Do zrobienia:
 //
 // short int long zeby dizlalo - Piotrus :((((
-// niezmieniajace sie obiekty One itp.
 // rvalues???????
-// operacje porownywania przesuniecie bitowe reszta operatorow
 // wybadac teren - Piotrus
-// podzielic elegancko na moduly (latwe)
 
 
 //liczy n-tą liczbę fibo
@@ -54,28 +51,14 @@ unsigned long long fib(unsigned int n) {
 }
 
 //ustawia na indeksie
-//TODO czemu short nie bool?
-void Fibo::set_digit(size_t fib_index, short value) {
-    digits[fib_index - 2] = value == 1;
+void Fibo::set_digit(size_t fib_index, bool value) {
+    digits[fib_index - 2] = value == ONE;
 }
 
-
-void Fibo:: print() const{ //funkcja robocza
-    for(auto it = digits.rbegin(); it != digits.rend(); it++){
-        if(*it){
-            std::cout << "1";
-        }else{
-            std::cout << "0";
-        }
-    }
-    std::cout << std::endl;
-}
-
-//chyba lepiej, inicjalizuje digits z jednym elementem ZERO
 //konstruktor bezparametrowy
 Fibo::Fibo() : digits(1, ZERO){};
 
-//TODO Assertion dla nie zer, co gd
+//TODO Assertion dla nie zer, wiodące zera tez złe
 //konstruktor ze Stringa
 Fibo:: Fibo(const std::string &s) { //co zrobic gdy s nie jest ciagiem zer i jedynek? (na razie zakladam ze jest)
     for (auto it = s.rbegin(); it != s.rend(); it++) {
@@ -154,7 +137,7 @@ Fibo::Fibo(long long int a) {
     digits.resize(i - 1);
     for (; i >= 2; i--) {
         if (fib(i) <= n) {
-            set_digit(i, 1);
+            set_digit(i, ONE);
             n -= fib(i);
         }
     }
@@ -169,7 +152,11 @@ void Fibo::add_one_at_position(size_t i) {
         if (digits[add_at] == 1) {
             digits[add_at + 1] = ONE;
             digits[add_at] = ZERO;
-            add_at -= 2;
+            if(add_at < 2){
+				break;
+            } else{
+				add_at -= 2;
+			}
         } else {
             digits[add_at] = ONE;
             break;
@@ -325,6 +312,30 @@ bool Fibo::operator<=(const Fibo &other) const {
 bool Fibo::operator>=(const Fibo &other) const {
     return !(*this < other);
 }
+
+ostream& operator<<(ostream& os, const Fibo& fibo){
+	for(auto it = fibo.digits.rbegin(); it != fibo.digits.rend(); it++){
+		if(*it){
+			std::cout << "1";
+		}else{
+			std::cout << "0";
+		}
+	}
+	std::cout << std::endl;
+	return os;
+}
+/*
+Fibo::operator long long int() const{
+
+	if(*this >= Fibo(INT64_MAX)){
+		return INT64_MAX;
+	}
+
+	long long int stary = 1;
+	long long int nowy = 1;
+
+	return 0;
+}*/
 
 
 
