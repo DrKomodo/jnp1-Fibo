@@ -12,51 +12,45 @@ const bool ONE = true;
 
 using namespace std;
 
-
-//czy mi dziala
 // Pytania:
-//czy argument do konstruktora ma byc przez referencje?
-//co ma byc w .cpp a co w .h?
-//jak inicjowac member objects kiedy argumenty ich oknstruktorow trzeba najpierw obliczyć tzn czy da sie uzyc
-//initializer list?
-// czy mamy uzywac unsigned? problem taki, ze wtedy warunki w petlach typu >= 0 nie ddzialaja
-
-
-// Do zrobienia:
-//
-// short int long zeby dizlalo - Piotrus :((((
+// czy operatory +, <<, maja zwracać move(kopi)?
+//a+=a; lub a ^ a
+//czy bool const z przodu? i z tyłu(chyba tak bo jak nie to pochodne funkcje z intami nie działają)
+//consty przy operatorach
+//czy int moze byc z lewej tylko dla +
+//no except
 // rvalues???????
-// wybadac teren - Piotrus
 
-
+namespace{
 //liczy n-tą liczbę fibo
-unsigned long long fib(unsigned int n) {
-    static std::vector<unsigned long long> fib_numbers(2);
-    fib_numbers[0] = 0;
-    fib_numbers[1] = 1;
+	unsigned long long fib(unsigned int n){
+		static std::vector<unsigned long long> fib_numbers(2);
+		fib_numbers[0] = 0;
+		fib_numbers[1] = 1;
 
-    if (n <= 0) {
-        return 0;
-    }
+		if(n <= 0){
+			return 0;
+		}
 
-    if (n >= fib_numbers.size()) {
-        fib_numbers.resize(n + 1);
-    }
+		if(n >= fib_numbers.size()){
+			fib_numbers.resize(n + 1);
+		}
 
-    if (fib_numbers[n] != 0) {
-        return fib_numbers[n];
-    }
+		if(fib_numbers[n] != 0){
+			return fib_numbers[n];
+		}
 
-    return fib_numbers[n] = fib(n - 1) + fib(n - 2);
+		return fib_numbers[n] = fib(n - 1) + fib(n - 2);
+	}
 }
 
 //ustawia na indeksie
-void Fibo::set_digit(size_t fib_index, bool value) {
-    digits[fib_index - 2] = value == ONE;
-}
+	void Fibo::set_digit(size_t fib_index, bool value){
+		digits[fib_index - 2] = (value == ONE);
+	}
 
 //konstruktor bezparametrowy
-Fibo::Fibo() : digits(1, ZERO){};
+Fibo::Fibo() : digits(1, ZERO){}
 
 //konstruktor ze Stringa
 Fibo::Fibo(const std::string &s) {
@@ -76,7 +70,7 @@ Fibo::Fibo(const char* c) : Fibo(std::string(c)){
 Fibo::Fibo(const Fibo& other) = default;
 
 // move constructor
-Fibo::Fibo(Fibo&& other) noexcept : digits(move(other.digits)){}
+Fibo::Fibo(Fibo&& other) : digits(move(other.digits)){}
 
 
 namespace {
@@ -149,14 +143,23 @@ Fibo::Fibo(unsigned long long n) {
     }
 }
 
-Fibo::Fibo(int n) : Fibo((unsigned long long) n){
+Fibo::Fibo(int n) {
 	assert(n >= 0);
+	digits = move(Fibo((unsigned long long) n).digits);
 }
 
 Fibo::Fibo(unsigned int n) : Fibo((unsigned long long) n){}
 
 Fibo::Fibo(long n) : Fibo((unsigned long long) n){
 	assert(n >= 0);
+	digits = move(Fibo((unsigned long long) n).digits);
+}
+
+Fibo::Fibo(unsigned long n) : Fibo((unsigned long long) n){}
+
+Fibo::Fibo(long long n) {
+	assert(n >= 0);
+	digits = move(Fibo((unsigned long long) n).digits);
 }
 
 void Fibo::add_one_at_position(size_t i) {
@@ -180,16 +183,6 @@ void Fibo::add_one_at_position(size_t i) {
     normalize();
 }
 
-const Fibo& Zero() {
-    static const Fibo zero;
-    return zero;
-}
-
-const Fibo& One() {
-    static const Fibo one("1");
-    return one;
-}
-
 Fibo& Fibo::operator+=(const Fibo &other) {
     if (this == &other) {
         return *this;
@@ -208,39 +201,33 @@ Fibo& Fibo::operator+=(const Fibo &other) {
     return *this;
 }
 
-
-
 //TODO pokombinowc czy napewno w ten sposob moze jakies Rvalue
 const Fibo operator+(Fibo a, const Fibo &b) {
 	return a += b;
 }
 
-const Fibo operator+(unsigned long long a , const Fibo &b) {
+const Fibo operator+(long long a , const Fibo &b) {
 	return Fibo(a) += b;
 }
 
-Fibo& Fibo::operator=(Fibo&& other) noexcept {
+Fibo& Fibo::operator=(Fibo&& other) {
     digits = move(other.digits);
     return *this;
 }
 
 Fibo& Fibo::operator=(const Fibo& that) = default;
 
-
-
-size_t Fibo::length() const {
-    return digits.size();
-}
-
-Fibo& Fibo::operator<<=(const unsigned n) {
+Fibo& Fibo::operator<<=(long long n) {
+	assert(n >= 0);
     Digits zeroes(n);
     zeroes.insert(zeroes.end(), make_move_iterator(digits.begin()), make_move_iterator(digits.end()));
     digits = move(zeroes);
+    normalize();
     return *this;
 }
 
-Fibo Fibo::operator<<(unsigned n) const {
-    return Fibo(*this) <<= n;
+const Fibo operator<<(Fibo a, long long n){
+    return a <<= n;
 }
 
 Fibo& Fibo::operator&=(const Fibo &other) {
@@ -252,21 +239,21 @@ Fibo& Fibo::operator&=(const Fibo &other) {
     return *this;
 }
 
-Fibo Fibo::operator&(const Fibo &other) const {
-    return Fibo(*this) &= other;
+const Fibo operator&(Fibo a, const Fibo &b) {
+    return a &= b;
 }
 
-//TODO NORMALIZUJ WSZEDZIE PRZ OPERATORACH
 Fibo& Fibo::operator|=(const Fibo &other) {
     size_t length = min(this->length(), other.length());
     for (size_t i = 0; i < length; i++) {
         digits[i] = digits[i] || other.digits[i];
     }
+    normalize();
     return *this;
 }
 
-Fibo Fibo::operator|(const Fibo &other) const {
-    return Fibo(*this) |= other;
+const Fibo operator|(Fibo a, const Fibo &b){
+    return a |= b;
 }
 
 Fibo& Fibo::operator^=(const Fibo &other) {
@@ -278,11 +265,11 @@ Fibo& Fibo::operator^=(const Fibo &other) {
     return *this;
 }
 
-Fibo Fibo::operator^(const Fibo &other) const {
-    return Fibo(*this) ^= other;
+const Fibo operator^(Fibo a, const Fibo &b) {
+    return a ^= b;
 }
 
-bool Fibo::operator==(const Fibo &other) const {
+const bool Fibo::operator==(const Fibo &other) const{
     if (length() != other.length()) {
         return false;
     }
@@ -295,11 +282,11 @@ bool Fibo::operator==(const Fibo &other) const {
     return true;
 }
 
-bool Fibo::operator!=(const Fibo &other) const {
+const bool Fibo::operator!=(const Fibo &other) const{
     return !(*this == other);
 }
 
-bool Fibo::operator<(const Fibo &other) const {
+const bool Fibo::operator<(const Fibo &other) const{
     if (length() > other.length()) {
         return false;
     }
@@ -321,30 +308,65 @@ bool Fibo::operator<(const Fibo &other) const {
     return false;
 }
 
-bool Fibo::operator>(const Fibo &other) const {
+const bool Fibo::operator>(const Fibo &other) const{
     return (*this != other) && !(*this < other);
 }
 
-bool Fibo::operator<=(const Fibo &other) const {
+const bool Fibo::operator<=(const Fibo &other) const {
     return !(*this > other);
 }
 
-bool Fibo::operator>=(const Fibo &other) const {
+const bool Fibo::operator>=(const Fibo &other) const{
     return !(*this < other);
+}
+
+const bool operator==(long long a, const Fibo &b){
+	return  b == Fibo(a);
+}
+
+const bool operator!=(long long a, const Fibo &b){
+	return b != Fibo(a);
+}
+
+const bool operator<(long long a, const Fibo &b){
+	return b > Fibo(a);
+}
+
+const bool operator>(long long a, const Fibo &b){
+	return b < Fibo(a);
+}
+const bool operator<=(long long a, const Fibo &b){
+	return b >= Fibo(a);
+}
+const bool operator>=(long long a, const Fibo &b){
+	return b <= Fibo(a);
+}
+
+size_t Fibo::length() const {
+	return digits.size();
 }
 
 ostream& operator<<(ostream& os, const Fibo& fibo){
 	for(auto it = fibo.digits.rbegin(); it != fibo.digits.rend(); it++){
 		if(*it){
-			std::cout << "1";
+			os << "1";
 		}else{
-			std::cout << "0";
+			os << "0";
 		}
 	}
-	std::cout << std::endl;
+	os << std::endl;
 	return os;
 }
 
+const Fibo& Zero() {
+	static const Fibo zero;
+	return zero;
+}
+
+const Fibo& One() {
+	static const Fibo one("1");
+	return one;
+}
 
 
 

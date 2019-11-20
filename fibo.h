@@ -13,7 +13,7 @@ class Fibo {
 public:
 	Fibo();
     Fibo(const Fibo& other);
-    Fibo(Fibo&& other) noexcept; //tak podpowiada z tym no except
+    Fibo(Fibo&& other); //tak podpowiada z tym no except
     explicit Fibo(const std::string &s);
     explicit Fibo(const char*);
 
@@ -31,26 +31,20 @@ public:
 
     //TODO czy to nie powinno byc const oraz & wszedzie z przodu, co daje const z tyłu?
     Fibo& operator+=(const Fibo &other);
-
-    Fibo& operator=(Fibo&& that) noexcept; //move
+    Fibo& operator=(Fibo&& that); //move
     Fibo& operator=(const Fibo& other);
-	Fibo& operator<<=(const unsigned n);
-    Fibo operator<<(unsigned n) const;
-    Fibo& operator&=(const Fibo &other);
-    Fibo operator&(const Fibo &other) const;
-    Fibo& operator|=(const Fibo &other);
-    Fibo operator|(const Fibo &other) const;
-    Fibo& operator^=(const Fibo &other);
-    Fibo operator^(const Fibo &other) const;
-	bool operator==(const Fibo &other) const;
-	bool operator!=(const Fibo &other) const;
-	bool operator<(const Fibo &other) const;
-	bool operator>(const Fibo &other) const;
-	bool operator<=(const Fibo &other) const;
-	bool operator>=(const Fibo &other) const;
+	Fibo& operator<<=(long long n);
+	Fibo& operator&=(const Fibo &other);
+	Fibo& operator|=(const Fibo &other);
+	Fibo& operator^=(const Fibo &other);
 
-    //TODO zeby działo 2 + fibo
-	//operator long long int() const;
+	const bool operator==(const Fibo &other) const;
+	const bool operator!=(const Fibo &other) const;
+	const bool operator<(const Fibo &other) const;
+	const bool operator>(const Fibo &other) const;
+	const bool operator<=(const Fibo &other) const;
+	const bool operator>=(const Fibo &other) const;
+
 	friend std::ostream& operator<<(std::ostream& os, const Fibo& fibo);
     size_t length() const;
 
@@ -60,21 +54,23 @@ private:
     void set_digit(size_t fib_index, bool value);
     void add_one_at_position(size_t i);
 };
+
+//TODO??lepiej chyba move
 const Fibo operator+(Fibo a, const Fibo &b);
-const Fibo operator+(unsigned long long a , const Fibo &b);
-//const bool operator==(unsigned long long a , const Fibo &b);
-//const bool operator!=(unsigned long long a , const Fibo &b);
-//const bool operator<(unsigned long long a , const Fibo &b);
-//const bool operator>(unsigned long long a , const Fibo &b);
-//const bool operator<=(unsigned long long a , const Fibo &b);
-//const bool operator>=(unsigned long long a , const Fibo &b);
+const Fibo operator+(long long a , const Fibo &b);
+const Fibo operator<<(Fibo a, long long n);
+const Fibo operator&(Fibo a, const Fibo &b);
+const Fibo operator|(Fibo a, const Fibo &b);
+const Fibo operator^(Fibo a, const Fibo &b);
 
 
-
-
+const bool operator==(long long a, const Fibo &other);
+const bool operator!=(long long a, const Fibo &b);
+const bool operator<(long long a, const Fibo &b);
+const bool operator<=(long long a, const Fibo &b);
+const bool operator>=(long long a, const Fibo &b);
 
 const Fibo& Zero();
 const Fibo& One();
-
 
 #endif
