@@ -61,8 +61,7 @@ Fibo::Fibo(const Fibo& other) = default;
 //move konstruktor
 Fibo::Fibo(Fibo&& other) : digits(move(other.digits)){}
 
-
-bool Fibo::iterate_until_repetition(size_t& current_index) const {
+bool Fibo::iterate_until_repetition(size_t& current_index) const{
 	Digit current_value = digits[current_index];
 	while(current_index > 0){
 		if(digits[current_index - 1] == current_value){
@@ -226,7 +225,7 @@ const Fibo operator+(long long a, const Fibo& b){
 	return Fibo(a) += b;
 }
 
-Fibo& Fibo::operator=(Fibo&& other){
+Fibo& Fibo::operator=(Fibo&& other) noexcept{
 	digits = move(other.digits);
 	return *this;
 }
@@ -402,6 +401,6 @@ const Fibo& Zero(){
 }
 
 const Fibo& One(){
-	static const Fibo one("1");
+	static const Fibo one(1);
 	return one;
 }

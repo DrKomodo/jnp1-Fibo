@@ -8,10 +8,6 @@
 using Digit = bool;
 using Digits = std::vector<Digit>;
 
-//TODO sprawdź move w operatorach jak działą
-//TODO sprobuj usunąć operatory dublowane porównujące
-//TODO testuj całosc
-
 class Fibo{
 
 public:
@@ -38,7 +34,7 @@ public:
 
 	//operatory przypisujące
 	Fibo& operator+=(const Fibo& other);
-	Fibo& operator=(Fibo&& that);
+	Fibo& operator=(Fibo&& that) noexcept;
 	Fibo& operator=(const Fibo& other);
 	Fibo& operator<<=(long long n);
 	Fibo& operator&=(const Fibo& other);
