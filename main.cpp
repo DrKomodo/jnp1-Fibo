@@ -6,6 +6,7 @@
 int main() {
 	Fibo f;
 
+
 	assert(f == Zero());
 	assert(Fibo(f) == Zero());
 	assert(Zero() < One());
@@ -32,7 +33,7 @@ int main() {
 
 	std::cout << Fibo("11") << std::endl; // prints 100
 	f1 += 2;
-	f1 = f2 + 2;
+	f1 = 2 + f2;
 	bool b;
 	b = 2 < f2;
 
