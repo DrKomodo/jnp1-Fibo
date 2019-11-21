@@ -2,10 +2,9 @@
 
 #include <cassert>
 #include <iostream>
-
+using namespace std;
 int main() {
 	Fibo f;
-
 
 	assert(f == Zero());
 	assert(Fibo(f) == Zero());
@@ -28,18 +27,15 @@ int main() {
 	Fibo f1("101");
 	Fibo f2 = Fibo("101");
 	assert(f1 == f2);
+	cout << f1 << "\n";
+	f1+=f1;
+cout << f1 <<"\n";
 
+f1=f1;
+cout << f1 << "\n";
 	assert(Fibo("11").length() == 3); // 11 == 100
 
 	std::cout << Fibo("11") << std::endl; // prints 100
-	f1 += 2;
-	f1 = 2 + f2;
-	bool b;
-	b = 2 < f2;
 
-	/*Fibo f3(true);
-	Fibo f4('a');
-	f1 += "10";
-	f1 = f2 + "10";
-	b = "10" < f2;*/
+
 }

@@ -61,46 +61,54 @@ Fibo::Fibo(const Fibo& other) = default;
 //move konstruktor
 Fibo::Fibo(Fibo&& other) : digits(move(other.digits)){}
 
-namespace{
-	bool iterate_until_repetition(const Digits& d, size_t& current_index){
-		Digit current_value = d[current_index];
-		while(current_index > 0){
-			if(d[current_index - 1] == current_value){
-				current_index--;
-				return true;
-			}
-			current_index--;
-			current_value = d[current_index];
-		}
-		return false;
-	}
 
-	void
-	handle_doubled_ones(Digits& d, size_t& current_index, size_t& free_slot){
-		d[free_slot] = ONE;
-		for(size_t i = free_slot; i-- > current_index;){
-			d[i] = ZERO;
+bool Fibo::iterate_until_repetition(size_t& current_index) const {
+	Digit current_value = digits[current_index];
+	while(current_index > 0){
+		if(digits[current_index - 1] == current_value){
+			current_index--;
+			return true;
 		}
-		free_slot = current_index;
+		current_index--;
+		current_value = digits[current_index];
+	}
+	return false;
+}
+
+//usuwa jedno powtórzenie jedynek
+void Fibo::handle_pair_of_one(size_t& current_index, size_t& free_slot){
+	digits[free_slot] = ONE;
+	for(size_t i = free_slot; i-- > current_index;){
+		digits[i] = ZERO;
+	}
+	free_slot = current_index;
+}
+
+//usuwa wiodące zera
+void Fibo::pop_zeros(){
+	while(digits.back() == 0 && digits.size() > 1){
+		digits.pop_back();
+	}
+}
+
+//zamienia powtórzenia jedynki
+void Fibo::remove_double_ones(){
+	digits.push_back(ZERO);
+	size_t free_slot = digits.size() - 1;
+	size_t current_index = digits.size() - 1;
+	while(iterate_until_repetition(current_index)){
+		if(digits[current_index] == 0){
+			free_slot = current_index;
+		}else{
+			handle_pair_of_one(current_index, free_slot);
+		}
 	}
 }
 
 //zmienia do postaci unormowanej
 void Fibo::normalize(){
-	digits.push_back(ZERO);
-	size_t free_slot = digits.size() - 1;
-	size_t current_index = digits.size() - 1;
-	while(iterate_until_repetition(digits, current_index)){
-		if(digits[current_index] == 0){
-			free_slot = current_index;
-		}else{
-			handle_doubled_ones(digits, current_index, free_slot);
-		}
-	}
-
-	while(digits.back() == 0 && digits.size() > 1){
-		digits.pop_back();
-	}
+	remove_double_ones();
+	pop_zeros();
 }
 
 namespace{
@@ -142,49 +150,71 @@ Fibo::Fibo(long n){
 	digits = move(Fibo((unsigned long long) n).digits);
 }
 
-Fibo::Fibo(unsigned long n){}
+Fibo::Fibo(unsigned long n) : Fibo((unsigned long long) n){}
 
 Fibo::Fibo(long long n){
 	assert(n >= 0);
 	digits = move(Fibo((unsigned long long) n).digits);
 }
 
-void Fibo::add_one_at_position(size_t i){
+//jeśli pętla doszła do końca ustawia ostatnie 2 cyfry
+void Fibo::handle_last_operation_in_adding(size_t add_at){
+	if(add_at == 1){
+		if(digits[add_at] == ONE){
+			digits[2] = ONE;
+			digits[1] = ZERO;
+			digits[0] = ONE;
+		}else{
+			digits[1] = ONE;
+		}
+	}
+
+	if(add_at == 0){
+		if(digits[0] == ONE){
+			digits[1] = ONE;
+			digits[0] = ZERO;
+		}else{
+			digits[0] = ONE;
+		}
+	}
+}
+
+void Fibo::add_one_at_position(size_t add_at){
 	digits.push_back(ZERO);
 
-	size_t add_at = i;
-	while(add_at >= 0){
-		if(digits[add_at] == 1){
+	while(add_at >= 2){
+		if(digits[add_at] == ONE){
 			digits[add_at + 1] = ONE;
 			digits[add_at] = ZERO;
-			if(add_at < 2){
-				break;
-			}else{
-				add_at -= 2;
-			}
+			add_at -= 2;
 		}else{
 			digits[add_at] = ONE;
 			break;
 		}
 	}
-	normalize();
+	if(add_at < 2){
+		handle_last_operation_in_adding(add_at);
+	}
+	remove_double_ones();
 }
 
 Fibo& Fibo::operator+=(const Fibo& other){
 	if(this == &other){
-		return *this;
+		return *this += Fibo(other);
 	}
 
-	if(other.digits.size() > digits.size()){
-		digits.resize(other.digits.size());
+	size_t length = other.length();
+	if(length > this->length()){
+		digits.resize(length, ZERO);
 	}
 
-	for(size_t i = 0; i < other.digits.size(); i++){
-		if(other.digits[i] == 1){
+	for(size_t i = 0; i < length; i++){
+		if(other.digits[i] == ONE){
 			add_one_at_position(i);
 		}
 	}
 
+	pop_zeros();
 	return *this;
 }
 
@@ -218,10 +248,22 @@ const Fibo operator<<(Fibo a, long long n){
 }
 
 Fibo& Fibo::operator&=(const Fibo& other){
-	size_t length = std::min(this->length(), other.length());
-	for(size_t i = 0; i < length; i++){
+
+	size_t length = other.length();
+	if(length > this->length()){
+		digits.resize(length, ZERO);
+	}
+
+	size_t i = 0;
+	for(; i < length; i++){
 		digits[i] = digits[i] && other.digits[i];
 	}
+
+	while(i < this->length()){
+		digits[i] = ZERO;
+		i++;
+	}
+
 	normalize();
 	return *this;
 }
@@ -231,7 +273,11 @@ const Fibo operator&(Fibo a, const Fibo& b){
 }
 
 Fibo& Fibo::operator|=(const Fibo& other){
-	size_t length = std::min(this->length(), other.length());
+	size_t length = other.length();
+	if(length > this->length()){
+		digits.resize(length, ZERO);
+	}
+
 	for(size_t i = 0; i < length; i++){
 		digits[i] = digits[i] || other.digits[i];
 	}
@@ -244,7 +290,11 @@ const Fibo operator|(Fibo a, const Fibo& b){
 }
 
 Fibo& Fibo::operator^=(const Fibo& other){
-	size_t length = std::min(this->length(), other.length());
+	size_t length = other.length();
+	if(length > this->length()){
+		digits.resize(length, ZERO);
+	}
+
 	for(size_t i = 0; i < length; i++){
 		digits[i] = digits[i] ^ other.digits[i];
 	}
@@ -256,7 +306,7 @@ const Fibo operator^(Fibo a, const Fibo& b){
 	return a ^= b;
 }
 
-const bool Fibo::operator==(const Fibo& other) const{
+bool Fibo::operator==(const Fibo& other) const{
 	if(length() != other.length()){
 		return false;
 	}
@@ -269,11 +319,11 @@ const bool Fibo::operator==(const Fibo& other) const{
 	return true;
 }
 
-const bool Fibo::operator!=(const Fibo& other) const{
+bool Fibo::operator!=(const Fibo& other) const{
 	return !(*this == other);
 }
 
-const bool Fibo::operator<(const Fibo& other) const{
+bool Fibo::operator<(const Fibo& other) const{
 	if(length() > other.length()){
 		return false;
 	}
@@ -295,39 +345,39 @@ const bool Fibo::operator<(const Fibo& other) const{
 	return false;
 }
 
-const bool Fibo::operator>(const Fibo& other) const{
+bool Fibo::operator>(const Fibo& other) const{
 	return (*this != other) && !(*this < other);
 }
 
-const bool Fibo::operator<=(const Fibo& other) const{
+bool Fibo::operator<=(const Fibo& other) const{
 	return !(*this > other);
 }
 
-const bool Fibo::operator>=(const Fibo& other) const{
+bool Fibo::operator>=(const Fibo& other) const{
 	return !(*this < other);
 }
 
-const bool operator==(long long a, const Fibo& b){
+bool operator==(long long a, const Fibo& b){
 	return b == Fibo(a);
 }
 
-const bool operator!=(long long a, const Fibo& b){
+bool operator!=(long long a, const Fibo& b){
 	return b != Fibo(a);
 }
 
-const bool operator<(long long a, const Fibo& b){
+bool operator<(long long a, const Fibo& b){
 	return b > Fibo(a);
 }
 
-const bool operator>(long long a, const Fibo& b){
+bool operator>(long long a, const Fibo& b){
 	return b < Fibo(a);
 }
 
-const bool operator<=(long long a, const Fibo& b){
+bool operator<=(long long a, const Fibo& b){
 	return b >= Fibo(a);
 }
 
-const bool operator>=(long long a, const Fibo& b){
+bool operator>=(long long a, const Fibo& b){
 	return b <= Fibo(a);
 }
 

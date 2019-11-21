@@ -11,7 +11,6 @@ using Digits = std::vector<Digit>;
 //TODO sprawdź move w operatorach jak działą
 //TODO sprobuj usunąć operatory dublowane porównujące
 //TODO testuj całosc
-//TODO popra gdy a+=a
 
 class Fibo{
 
@@ -47,20 +46,25 @@ public:
 	Fibo& operator^=(const Fibo& other);
 
 	//operatory porównujące fibo z fibo
-	const bool operator==(const Fibo& other) const;
-	const bool operator!=(const Fibo& other) const;
-	const bool operator<(const Fibo& other) const;
-	const bool operator>(const Fibo& other) const;
-	const bool operator<=(const Fibo& other) const;
-	const bool operator>=(const Fibo& other) const;
+	bool operator==(const Fibo& other) const;
+	bool operator!=(const Fibo& other) const;
+	bool operator<(const Fibo& other) const;
+	bool operator>(const Fibo& other) const;
+	bool operator<=(const Fibo& other) const;
+	bool operator>=(const Fibo& other) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const Fibo& fibo);
 	size_t length() const;
 
 private:
 	Digits digits;
+	bool iterate_until_repetition(size_t& current_index) const;
+	void handle_pair_of_one(size_t& current_index, size_t& free_slot);
+	void remove_double_ones();
+	void pop_zeros();
 	void normalize();
 	void set_digit(size_t fib_index, bool value);
+	void handle_last_operation_in_adding(size_t add_at);
 	void add_one_at_position(size_t i);
 };
 
@@ -73,12 +77,12 @@ const Fibo operator|(Fibo a, const Fibo& b);
 const Fibo operator^(Fibo a, const Fibo& b);
 
 //operatory porównujące liczby z fibo
-const bool operator==(long long a, const Fibo& other);
-const bool operator!=(long long a, const Fibo& b);
-const bool operator<(long long a, const Fibo& b);
-const bool operator>(long long a, const Fibo& b);
-const bool operator<=(long long a, const Fibo& b);
-const bool operator>=(long long a, const Fibo& b);
+bool operator==(long long a, const Fibo& other);
+bool operator!=(long long a, const Fibo& b);
+bool operator<(long long a, const Fibo& b);
+bool operator>(long long a, const Fibo& b);
+bool operator<=(long long a, const Fibo& b);
+bool operator>=(long long a, const Fibo& b);
 
 const Fibo& Zero();
 const Fibo& One();
